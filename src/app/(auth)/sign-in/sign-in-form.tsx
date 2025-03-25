@@ -2,9 +2,9 @@
 import { z } from 'zod'
 
 import { useForm } from 'react-hook-form'
-import { UserSignUpSchema } from '@/lib/validation'
+import { UserSignInSchema } from '@/lib/validation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { registerUser, SignInWithGoogle } from '@/lib/actions/user.actions'
+import { SignInWithGoogle } from '@/lib/actions/user.actions'
 import { Button } from '@/components/ui/button'
 import { FcGoogle } from 'react-icons/fc'
 import { FaFacebook } from 'react-icons/fa'
@@ -14,27 +14,25 @@ import InputField from '@/components/InputField'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-const signUpDefaultValues =
+const signInDefaultValues =
   process.env.NODE_ENV === 'development'
     ? {
-        name: 'john Doe',
         email: 'john@gmail.com',
         password: '123456',
-        confirmedPassword: '123456',
       }
-    : { name: '', email: '', password: '', confirmedPassword: '' }
+    : { email: '', password: '' }
 
-export default function SignUpForm() {
+export default function SignInForm() {
   const searchParams = useSearchParams()
 
   const callbackUrl = searchParams.get('callbackUrl') || '/'
-  const form = useForm<z.infer<typeof UserSignUpSchema>>({
-    resolver: zodResolver(UserSignUpSchema),
-    defaultValues: signUpDefaultValues,
+  const form = useForm<z.infer<typeof UserSignInSchema>>({
+    resolver: zodResolver(UserSignInSchema),
+    defaultValues: signInDefaultValues,
   })
 
-  async function onSubmit(values: z.infer<typeof UserSignUpSchema>) {
-    await registerUser(values)
+  async function onSubmit(values: z.infer<typeof UserSignInSchema>) {
+    console.log(values)
 
     // redirect the user to the callback url
   }
@@ -71,13 +69,7 @@ export default function SignUpForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <input type='hidden' name='callbackUrl' value={callbackUrl} />
-          <InputField
-            form={form}
-            label='Name'
-            name='name'
-            placeholder='John Doe'
-            type='text'
-          />
+
           <InputField
             form={form}
             label='Email'
@@ -92,24 +84,27 @@ export default function SignUpForm() {
             placeholder='*********'
             type='password'
           />
-          <InputField
-            form={form}
-            label='Confirm Password'
-            name='confirmedPassword'
-            placeholder='*********'
-            type='password'
-          />
 
-          <Button className='w-full rounded-lg text-base'> Sign Up </Button>
+          <div className='text-center'>
+            <Button variant='link' asChild>
+              <Link href={`/auth/forgot`} className='text-base font-semibold'>
+                Forgot password?
+              </Link>
+            </Button>
+          </div>
+
+          <Button className='w-full rounded-lg text-base'>
+            Sign in to your account
+          </Button>
         </form>
         <div className='flex items-center'>
-          <p className='text-muted-foreground'>Have an account? </p>
+          <p className='text-muted-foreground'>Don&apos;t have an account? </p>
           <Button variant='link' asChild className='pl-1'>
             <Link
-              href={`/sign-in?callbakUrl=${callbackUrl}`}
+              href={`/sign-up?callbakUrl=${callbackUrl}`}
               className='text-base font-semibold'
             >
-              Login
+              Sign up
             </Link>
           </Button>
         </div>
