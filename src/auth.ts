@@ -13,28 +13,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google,
     CredentialsProvider({
       credentials: { email: { type: 'email' }, pasword: { type: 'password' } },
-      async authorize(credentials) {
-        // Strategy to authenticate the user
-        // connect to DB
-        await connectDB()
-        if (credentials) return null
-        const user = await User.findOne({ email: credentials.email })
-        if (user && user.password) {
-          const isMatch = await compare(
-            credentials.password as string,
-            user.password,
-          )
-          if (isMatch) {
-            return {
-              id: user._id,
-              name: user.name,
-              email: user.email,
-              role: user.role,
-            }
-          }
-        }
-        return null
-      },
+      // async authorize(credentials) {
+      //   // Strategy to authenticate the user
+      //   // connect to DB
+      //   await connectDB()
+      //   if (credentials) return null
+      //   const user = await User.findOne({ email: credentials.email })
+      //   if (user && user.password) {
+      //     const isMatch = await compare(
+      //       credentials.password as string,
+      //       user.password,
+      //     )
+      //     if (isMatch) {
+      //       return {
+      //         id: user._id,
+      //         name: user.name,
+      //         email: user.email,
+      //         role: user.role,
+      //       }
+      //     }
+      //   }
+      //   return null
+      // },
     }),
   ],
 })
