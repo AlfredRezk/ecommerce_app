@@ -6,7 +6,7 @@ import { Button } from '../ui/button'
 import { Minus, Plus } from 'lucide-react'
 import AddToCart from '../cart/add-to-cart-btn'
 
-import { generateId, round2 } from '@/lib/utils'
+import { generateId } from '@/lib/utils'
 
 export default function ProductQuantity({
   product,
