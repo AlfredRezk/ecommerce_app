@@ -2,6 +2,8 @@ import { APP_NAME } from '@/lib/constants'
 import Image from 'next/image'
 import Link from 'next/link'
 import Search from './search'
+import UserButton from './user-button'
+import CartButton from './cart-button'
 
 export default function Header() {
   return (
@@ -29,8 +31,15 @@ export default function Header() {
           <div className='hidden md:block flex-1 max-w-xl'>
             <Search />
           </div>
-          <p>Menu</p>
-          {/* Cart and user menus */}
+          <div className='flex items-center justify-center'>
+            <UserButton />
+            <CartButton />
+          </div>
+        </div>
+
+        {/* small screen */}
+        <div className='md:hidden block py-2'>
+          <Search />
         </div>
       </div>
     </header>

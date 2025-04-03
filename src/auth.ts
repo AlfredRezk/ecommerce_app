@@ -1,40 +1,92 @@
-import NextAuth from 'next-auth'
+import NextAuth, { type DefaultSession } from 'next-auth'
 import Google from 'next-auth/providers/google'
-import CredentialsProvider from 'next-auth/providers/credentials'
 import { MongoDBAdapter } from '@auth/mongodb-adapter'
 import client from './lib/db/client'
 import { connectDB } from './lib/db'
 import User from './lib/db/models/User'
+import Credentials from 'next-auth/providers/credentials'
 import { compare } from 'bcryptjs'
+import authConfig from './auth.config'
+
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      role: string
+    } & DefaultSession['user']
+  }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
+  pages: {
+    signIn: '/sign-in',
+    newUser: '/sign-up',
+    error: '/sign-in',
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60,
+  },
   adapter: MongoDBAdapter(client),
   providers: [
     Google,
-    CredentialsProvider({
-      credentials: { email: { type: 'email' }, pasword: { type: 'password' } },
-      // async authorize(credentials) {
-      //   // Strategy to authenticate the user
-      //   // connect to DB
-      //   await connectDB()
-      //   if (credentials) return null
-      //   const user = await User.findOne({ email: credentials.email })
-      //   if (user && user.password) {
-      //     const isMatch = await compare(
-      //       credentials.password as string,
-      //       user.password,
-      //     )
-      //     if (isMatch) {
-      //       return {
-      //         id: user._id,
-      //         name: user.name,
-      //         email: user.email,
-      //         role: user.role,
-      //       }
-      //     }
-      //   }
-      //   return null
-      // },
+    Credentials({
+      credentials: {
+        email: { type: 'email' },
+        password: { type: 'password' },
+      },
+
+      // Strategy
+      async authorize(credentials) {
+        await connectDB()
+        if (credentials == null) return null
+        const user = await User.findOne({ email: credentials.email })
+        if (user && user.password) {
+          const isMatch = await compare(
+            credentials.password as string,
+            user.password,
+          )
+          if (isMatch) {
+            return {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+            }
+          }
+        }
+        return null
+      },
     }),
   ],
+  callbacks: {
+    jwt: async ({ token, user, session, trigger }) => {
+      if (user) {
+        if (!user.name) {
+          await connectDB()
+          await User.findByIdAndUpdate(user.id, {
+            name: user.name || user.email!.split('@')[0],
+            role: 'user',
+          })
+        }
+
+        token.name = user.name || user.email!.split('@')[0]
+        token.role = (user as { role: string }).role
+      }
+      if (session?.user?.name && trigger === 'update')
+        token.name = session.user.name
+      return token
+    },
+
+    session: async ({ session, token, trigger, user }) => {
+      session.user.id = token.sub as string
+      session.user.role = token.role as string
+      session.user.name = token.name
+      if (trigger === 'update') {
+        session.user.name = user.name
+      }
+
+      return session
+    },
+  },
 })

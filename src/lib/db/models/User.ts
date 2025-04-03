@@ -3,13 +3,13 @@ import { UserSchema } from '@/lib/validation'
 import { Schema, Document, model, models, Model } from 'mongoose'
 import { z } from 'zod'
 
-export interface User extends Document, z.infer<typeof UserSchema> {
+export interface UserType extends Document, z.infer<typeof UserSchema> {
   _id: string
   createdAt: Date
   updaredAt: Date
 }
 
-const userSchema = new Schema<User>(
+const userSchema = new Schema<UserType>(
   {
     email: { type: String, required: true },
     name: { type: String, required: true },
@@ -23,6 +23,7 @@ const userSchema = new Schema<User>(
   },
 )
 
-const User = (models.User as Model<User>) || model<User>('User', userSchema)
+const User =
+  (models.User as Model<UserType>) || model<UserType>('User', userSchema)
 
 export default User

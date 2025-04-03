@@ -4,15 +4,21 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { UserSignUpSchema } from '@/lib/validation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { registerUser, SignInWithGoogle } from '@/lib/actions/user.actions'
+import {
+  registerUser,
+  signInWithCredentials,
+  SignInWithGoogle,
+} from '@/lib/actions/user.actions'
 import { Button } from '@/components/ui/button'
 import { FcGoogle } from 'react-icons/fc'
 import { FaFacebook } from 'react-icons/fa'
 import { Form } from '@/components/ui/form'
 
 import InputField from '@/components/InputField'
-import { useSearchParams } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 
 const signUpDefaultValues =
   process.env.NODE_ENV === 'development'
@@ -26,7 +32,6 @@ const signUpDefaultValues =
 
 export default function SignUpForm() {
   const searchParams = useSearchParams()
-
   const callbackUrl = searchParams.get('callbackUrl') || '/'
   const form = useForm<z.infer<typeof UserSignUpSchema>>({
     resolver: zodResolver(UserSignUpSchema),
@@ -34,9 +39,18 @@ export default function SignUpForm() {
   })
 
   async function onSubmit(values: z.infer<typeof UserSignUpSchema>) {
-    await registerUser(values)
-
-    // redirect the user to the callback url
+    try {
+      const res = await registerUser(values)
+      if (!res.success) return toast.error(res.message as string)
+      await signInWithCredentials({
+        email: values.email,
+        password: values.password,
+      })
+      redirect(callbackUrl)
+    } catch (error) {
+      if (isRedirectError(error)) throw error
+      toast.error('Invalid email or password')
+    }
   }
 
   return (

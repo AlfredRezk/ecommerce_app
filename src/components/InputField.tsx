@@ -29,6 +29,7 @@ export default function InputField({
   placeholder,
   name,
   disabled,
+  className,
 }: formInputProps) {
   const [showPassword, setShowPassword] = useState(false)
   return (
@@ -36,7 +37,7 @@ export default function InputField({
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className='relative'>
+        <FormItem className={`relative ${className}`}>
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <Input

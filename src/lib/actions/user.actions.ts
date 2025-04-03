@@ -1,17 +1,29 @@
 'use server'
 
 import { z } from 'zod'
-import { UserSignUpSchema } from '../validation'
+import { UserSignInSchema, UserSignUpSchema } from '../validation'
 import { connectDB } from '../db'
 import User from '../db/models/User'
 import { hash } from 'bcryptjs'
-import { signIn } from '@/auth'
+import { signIn, signOut } from '@/auth'
+import { formatError } from '../utils'
+
+import { redirect } from 'next/navigation'
 
 export const SignInWithGoogle = async () => {
   await signIn('google')
 }
 
-export const signOut = async () => {}
+export const signInWithCredentials = async (
+  user: z.infer<typeof UserSignInSchema>,
+) => {
+  await signIn('credentials', { ...user, redirect: false })
+}
+
+export const SignOut = async () => {
+  const rectirectTo = await signOut({ redirect: false })
+  redirect(rectirectTo.redirect)
+}
 
 // Create a User / Register a User
 export async function registerUser(
@@ -33,6 +45,6 @@ export async function registerUser(
     return { success: true, message: 'User created Successfully' }
   } catch (error) {
     // Todo: format errors
-    return { success: false, message: error }
+    return { success: false, message: formatError(error) }
   }
 }

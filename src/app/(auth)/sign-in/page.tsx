@@ -2,8 +2,18 @@ import { Card } from '@/components/ui/card'
 import React from 'react'
 
 import SignInForm from './sign-in-form'
+import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
 
-export default function SignInPage() {
+export default async function SignInPage(props: {
+  searchParams: Promise<{ callbackUrl: string }>
+}) {
+  const { callbackUrl } = await props.searchParams
+
+  const session = await auth()
+  console.log(session)
+  if (session) return redirect(callbackUrl || '/')
+
   return (
     <section className='h-full w-full flex justify-center items-center py-36'>
       <Card className='container mx-auto p-0 flex rounded-lg overflow-hidden shadow-lg flex-col lg:flex-row'>

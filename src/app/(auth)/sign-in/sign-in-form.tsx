@@ -4,15 +4,20 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { UserSignInSchema } from '@/lib/validation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { SignInWithGoogle } from '@/lib/actions/user.actions'
+import {
+  signInWithCredentials,
+  SignInWithGoogle,
+} from '@/lib/actions/user.actions'
 import { Button } from '@/components/ui/button'
 import { FcGoogle } from 'react-icons/fc'
 import { FaFacebook } from 'react-icons/fa'
 import { Form } from '@/components/ui/form'
 
 import InputField from '@/components/InputField'
-import { useSearchParams } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 
 const signInDefaultValues =
   process.env.NODE_ENV === 'development'
@@ -32,7 +37,16 @@ export default function SignInForm() {
   })
 
   async function onSubmit(values: z.infer<typeof UserSignInSchema>) {
-    console.log(values)
+    try {
+      await signInWithCredentials({
+        email: values.email,
+        password: values.password,
+      })
+      redirect(callbackUrl)
+    } catch (error) {
+      if (isRedirectError(error)) throw error
+      toast.error('Invalid email or password')
+    }
 
     // redirect the user to the callback url
   }
