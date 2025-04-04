@@ -116,7 +116,7 @@ export default function OrderDetailsForm({
               <span>Items and Shipping</span>
             </div>
             <div className='col-span-2'>
-              <p> Delivery date: {expectedDeliveryDate}</p>
+              <p> Delivery date: {expectedDeliveryDate.toLocaleDateString()}</p>
               <ul>
                 {items.map((item, _index) => (
                   <li key={_index}>
