@@ -1,13 +1,13 @@
-import Order from '@/lib/db/models/Order'
 import { NextRequest, NextResponse } from 'next/server'
+import Order from '@/lib/db/models/Order'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
+const stripe = new Stripe(process.env.SRIPE_SECRET_KEY as string)
 
 export async function POST(req: NextRequest) {
   const event = await stripe.webhooks.constructEvent(
     await req.text(),
-    req.headers.get('Stripe-Signature') as string,
+    req.headers.get('stripe-signature') as string,
     process.env.STRIPE_WEBHOOK_SECRET as string,
   )
 
@@ -17,7 +17,9 @@ export async function POST(req: NextRequest) {
     const email = charge.billing_details.email
     const pricePaidInCents = charge.amount
     const order = await Order.findById(orderId).populate('user', 'email')
-    if (order == null) return new NextResponse('Bad Request', { status: 400 })
+    if (order == null) {
+      return new NextResponse('Bad Request', { status: 400 })
+    }
 
     order.isPaid = true
     order.paidAt = new Date()
@@ -30,7 +32,7 @@ export async function POST(req: NextRequest) {
     await order.save()
 
     return NextResponse.json({
-      message: 'Order paid successfully',
+      message: 'updateOrderToPaid was successful',
     })
   }
   return new NextResponse()
