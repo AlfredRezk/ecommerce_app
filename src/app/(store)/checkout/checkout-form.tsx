@@ -212,7 +212,7 @@ export default function CheckoutForm() {
                   <span className='w-8'>1</span>
                   <span>Shipping address</span>
                 </div>
-                <div className='col-span5'>
+                <div className='col-span-5'>
                   <p>
                     {shippingAddress.fullName} <br />
                     {shippingAddress.street} <br />

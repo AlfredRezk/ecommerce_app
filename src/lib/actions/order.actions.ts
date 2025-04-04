@@ -11,7 +11,7 @@ import { formatError, round2 } from '../utils'
 import { AVALIABLE_DELIVERY_DATES } from '../constants'
 import { connectDB } from '../db'
 import { auth } from '@/auth'
-import Order from '../db/models/Order'
+import Order, { IOrder } from '../db/models/Order'
 
 export const createOrder = async (
   clientSideCart: z.infer<typeof CartSchema>,
@@ -110,4 +110,8 @@ export const calcDeliveryDateAndPrice = async ({
   }
 }
 
-export const getOrderById = async () => {}
+export const getOrderById = async (orderId: string): Promise<IOrder> => {
+  await connectDB()
+  const order = await Order.findById(orderId)
+  return JSON.parse(JSON.stringify(order))
+}
